@@ -1,0 +1,7 @@
+services:
+  mc:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "19132:19132/udp" 
