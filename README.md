@@ -1,0 +1,2 @@
+# BedrockPluginLoader
+統合版Minecraftのプラグインを作成できるようにします。
