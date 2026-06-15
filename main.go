@@ -1,12 +1,14 @@
 package main
 
 import (
+	"bytes"
 	"log"
 	"log/slog"
 	"net"
 	"os"
 	"path/filepath"
 	"plugin"
+	"runtime"
 	"time"
 
 	"github.com/df-mc/dragonfly/server"
@@ -365,6 +367,11 @@ func loadPlugins(api *PluginAPI) {
 		log.Fatalf("failed to create plugins directory: %v", err)
 	}
 
+	if runtime.GOOS == "windows" {
+		log.Printf("Go plugins are not supported on windows/%s. Run this server on Linux or WSL to load plugins from %s.", runtime.GOARCH, pluginDir)
+		return
+	}
+
 	files, err := filepath.Glob(filepath.Join(pluginDir, "*.so"))
 	if err != nil {
 		log.Fatalf("failed to scan plugins: %v", err)
@@ -378,6 +385,11 @@ func loadPlugins(api *PluginAPI) {
 func loadPlugin(file string, api *PluginAPI) {
 	log.Printf("loading plugin %s...", file)
 
+	if invalid, reason := invalidPluginFile(file); invalid {
+		log.Printf("skipping plugin %s: %s", file, reason)
+		return
+	}
+
 	p, err := plugin.Open(file)
 	if err != nil {
 		log.Printf("failed to open plugin %s: %v", file, err)
@@ -388,6 +400,17 @@ func loadPlugin(file string, api *PluginAPI) {
 		log.Printf("failed to initialise plugin object %s: %v", file, err)
 	}
 	registerFunctionHooks(p, file, api)
+}
+
+func invalidPluginFile(file string) (bool, string) {
+	data, err := os.ReadFile(file)
+	if err != nil {
+		return true, "failed to read file before opening: " + err.Error()
+	}
+	if bytes.Contains(data, []byte("-buildmode=c-shared")) {
+		return true, "built with -buildmode=c-shared; rebuild it with -buildmode=plugin"
+	}
+	return false, ""
 }
 
 func initPluginObject(p *plugin.Plugin, file string, api *PluginAPI) error {
