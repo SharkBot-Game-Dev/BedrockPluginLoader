@@ -27,10 +27,6 @@ func Init(srv *server.Server) {
 	log.Printf("[moderatorplugin] URL spam protection enabled")
 }
 
-func OnPlayerJoin(p *player.Player) {
-	p.Message("moderatorplugin is enabled.")
-}
-
 func PlayerHandler(p *player.Player) player.Handler {
 	return &moderatorHandler{p: p}
 }
