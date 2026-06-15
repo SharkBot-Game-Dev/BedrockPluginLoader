@@ -4,9 +4,17 @@ This plugin demonstrates the function-hook API exposed by BedrockPluginLoader.
 
 Implemented hooks:
 
+- `ConfigureServer(*server.Config)`
+- `BeforeServerCreate(*server.Config)`
+- `AfterServerCreate(*server.Server)`
+- `BeforeServerListen(*server.Server)`
+- `AfterServerListen(*server.Server)`
 - `Init(*server.Server)`
+- `BeforePlayerReady(*player.Player)`
 - `OnPlayerJoin(*player.Player)`
+- `AfterPlayerReady(*player.Player)`
 - `PlayerHandler(*player.Player) player.Handler`
+- `InventoryHandler(*player.Player) inventory.Handler`
 - `WorldHandler(*world.World) world.Handler`
 
 Build it from the repository root on a Go platform that supports plugins, such
@@ -23,4 +31,6 @@ Then start the server normally. The loader scans `plugins/*.so` and registers
 the exported hooks automatically.
 
 Try typing `cancel` in chat to see an event cancelled, or any other message to
-see it rewritten with an `[example]` prefix.
+see it rewritten with an `[example]` prefix. The plugin also logs block breaks,
+item use, inventory take/place/drop actions, entity spawn/despawn events, and
+attacks against living entities.
